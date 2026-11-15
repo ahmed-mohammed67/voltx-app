@@ -1,0 +1,23 @@
+workflows:
+  voltx-android:
+    name: VOLT-X Android
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    environment:
+      flutter: stable
+    scripts:
+      - name: Create Android project
+        script: |
+          flutter create --platforms=android --project-name voltx --org com.voltx .
+          cp src/main.dart lib/main.dart
+      - name: Allow internet, HTTP to ESP32, app name
+        script: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i '' 's#<application#<uses-permission android:name="android.permission.INTERNET"/><application android:usesCleartextTraffic="true"#' $M
+          sed -i '' 's#android:label="voltx"#android:label="VOLT-X"#' $M
+      - name: Get packages
+        script: flutter pub get
+      - name: Build APK
+        script: flutter build apk --release
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
