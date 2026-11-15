@@ -12,7 +12,7 @@ const cyan = Color(0xFF00EAFF);
 const green = Color(0xFF00FF9D);
 const red = Color(0xFFFF405C);
 const panel = Color(0xFF0B1828);
-const muted = Color(0xFF8AA9BA);
+const dim = Color(0xFF8AA9BA);
 
 class VoltXApp extends StatelessWidget {
   const VoltXApp({super.key});
@@ -183,7 +183,7 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
             const SizedBox(width: 10),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(label, style: const TextStyle(color: muted, fontSize: 10, letterSpacing: 1.5)),
+                Text(label, style: const TextStyle(color: dim, fontSize: 10, letterSpacing: 1.5)),
                 const SizedBox(height: 4),
                 Text(value, style: TextStyle(color: c, fontWeight: FontWeight.bold, fontSize: 15)),
               ]),
@@ -217,7 +217,7 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
               const Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('VOLT-X', style: TextStyle(color: cyan, fontSize: 24, letterSpacing: 5, fontWeight: FontWeight.bold)),
-                  Text('VOLTAGE PROTECTION SYSTEM', style: TextStyle(color: muted, fontSize: 10, letterSpacing: 2)),
+                  Text('VOLTAGE PROTECTION SYSTEM', style: TextStyle(color: dim, fontSize: 10, letterSpacing: 2)),
                 ]),
               ),
               IconButton(icon: const Icon(Icons.tune, color: cyan), onPressed: _settings),
@@ -264,14 +264,14 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
                     CustomPaint(size: const Size(240, 240), painter: GaugePainter(v / (limit * 1.25), 1 / 1.25, c)),
                     Column(mainAxisSize: MainAxisSize.min, children: [
                       Text(v.toStringAsFixed(2), style: TextStyle(color: c, fontSize: 54, fontWeight: FontWeight.bold)),
-                      const Text('VOLTS', style: TextStyle(color: muted, letterSpacing: 4)),
+                      const Text('VOLTS', style: TextStyle(color: dim, letterSpacing: 4)),
                     ]),
                   ]),
                 ),
                 Text(fault ? '⚠ OVER VOLTAGE DETECTED' : '✓ SYSTEM NORMAL',
                     style: TextStyle(color: fault ? red : green, fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text('Trip limit: ${limit.toStringAsFixed(2)} V', style: const TextStyle(color: muted)),
+                Text('Trip limit: ${limit.toStringAsFixed(2)} V', style: const TextStyle(color: dim)),
               ]),
             ),
             const SizedBox(height: 10),
@@ -285,13 +285,13 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
             ]),
             const SizedBox(height: 10),
             _card(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('LIVE VOLTAGE (LAST 60 s)', style: TextStyle(color: muted, fontSize: 11, letterSpacing: 1.5)),
+              const Text('LIVE VOLTAGE (LAST 60 s)', style: TextStyle(color: dim, fontSize: 11, letterSpacing: 1.5)),
               const SizedBox(height: 10),
               SizedBox(height: 140, width: double.infinity, child: CustomPaint(painter: ChartPainter(history, limit))),
             ])),
             const SizedBox(height: 12),
             _card(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('FAULT LOG', style: TextStyle(color: muted, fontSize: 11, letterSpacing: 1.5)),
+              const Text('FAULT LOG', style: TextStyle(color: dim, fontSize: 11, letterSpacing: 1.5)),
               const SizedBox(height: 8),
               if (log.isEmpty) const Text('No faults recorded', style: TextStyle(color: green)),
               for (final l in log.take(8))
