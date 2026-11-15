@@ -33,7 +33,8 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMixin {
   String ip = '', err = '';
-  bool demo = false;
+  bool demo = false, muted = false, dismissed = false;
+  String alert = '';
   double v = 0, limit = 8;
   bool fault = false, online = false, relay = false, buzzer = false;
   int fails = 0, tick = 0;
@@ -62,15 +63,19 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
     setState(() {
       ip = p.getString('ip') ?? '';
       demo = p.getBool('demo') ?? false;
+      muted = p.getBool('muted') ?? false;
     });
     if (ip.isEmpty && !demo && mounted) _settings();
   }
 
   void _apply(double nv, bool nf, bool nr, bool nb, double lim) {
     if (nf && !fault) {
-      HapticFeedback.heavyImpact();
+      if (!muted) HapticFeedback.heavyImpact();
+      dismissed = false;
+      alert = '${nv.toStringAsFixed(2)} V at ${DateTime.now().toString().substring(11, 19)}';
       log.insert(0, '${DateTime.now().toString().substring(11, 19)}   ${nv.toStringAsFixed(2)} V   OVER VOLTAGE');
     }
+    if (nf && fault && !muted && DateTime.now().second % 3 == 0) HapticFeedback.vibrate();
     setState(() {
       v = nv;
       fault = nf;
@@ -111,6 +116,7 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
   void _settings() {
     final ipC = TextEditingController(text: ip);
     bool d = demo;
+    bool m = muted;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -132,15 +138,27 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
               title: const Text('Demo mode (no ESP32 needed)'),
               activeColor: cyan,
             ),
+            SwitchListTile(
+              value: m,
+              onChanged: (x) => setS(() => m = x),
+              title: const Text('Mute vibration alerts'),
+              activeColor: cyan,
+            ),
+            TextButton(
+              onPressed: () => HapticFeedback.heavyImpact(),
+              child: const Text('TEST VIBRATION'),
+            ),
             const SizedBox(height: 8),
             FilledButton(
               onPressed: () async {
                 final p = await SharedPreferences.getInstance();
                 await p.setString('ip', ipC.text.trim());
                 await p.setBool('demo', d);
+                await p.setBool('muted', m);
                 setState(() {
                   ip = ipC.text.trim();
                   demo = d;
+                  muted = m;
                   fails = 0;
                   history.clear();
                 });
@@ -205,6 +223,18 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
               IconButton(icon: const Icon(Icons.tune, color: cyan), onPressed: _settings),
             ]),
             const SizedBox(height: 14),
+            if (fault && !dismissed)
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.fromLTRB(14, 8, 4, 8),
+                decoration: BoxDecoration(color: red, borderRadius: BorderRadius.circular(12)),
+                child: Row(children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text('ALERT: over voltage $alert', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                  IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => setState(() => dismissed = true)),
+                ]),
+              ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(color: panel, borderRadius: BorderRadius.circular(12)),
